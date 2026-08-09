@@ -1,0 +1,167 @@
+# Browser Takeback Windows x64 build
+#
+# Required Azure Managed DevOps Pool configuration:
+# - Stateful pool (reuses the Chromium checkout and build outputs while the
+#   selected agent remains online).
+# - Agent image: Azure Pipelines Windows Server 2025 Gen 2
+#   (`windows-2025-g2`), which includes Visual Studio 2026.
+# - Recommended VM size: at least 16 vCPU / 64 GiB RAM.
+# - The demands below attach a 512 GiB data disk as F: and place the agent work
+#   folder on it. VM size and stateful-pool retention are configured on the
+#   Managed DevOps Pool resource, not in this YAML.
+
+trigger:
+  branches:
+    include:
+      - main
+      - takeback/*
+
+pr:
+  branches:
+    include:
+      - main
+
+parameters:
+  - name: managedPoolName
+    displayName: Azure Managed DevOps Pool
+    type: string
+    default: browser-takeback-windows
+
+variables:
+  nodeVersion: 24.18.0
+  braveCheckout: $(Pipeline.Workspace)\src\brave
+  chromiumRoot: $(Pipeline.Workspace)\src
+  vs2026Install: C:\Program Files\Microsoft Visual Studio\18\Enterprise
+
+jobs:
+  - job: windows_x64
+    displayName: Brave Windows x64
+    timeoutInMinutes: 0
+    cancelTimeoutInMinutes: 5
+    pool:
+      name: ${{ parameters.managedPoolName }}
+      demands:
+        - ImageOverride -equals windows-2025-g2
+        - DiskSizeGiB -equals 512
+        - StorageAccountType -equals Premium_LRS
+        - Caching -equals ReadWrite
+        - DriveLetter -equals F
+        - WorkFolder -equals F:\browser-takeback-work
+        - CustomCapabilities -equals browser-takeback-windows-x64
+    steps:
+      # Manual checkout lets Git's line-ending and long-path settings be applied
+      # before repository files are materialized. The Chromium checkout lives
+      # beside Brave at $(Pipeline.Workspace)\src and survives on a reused
+      # stateful agent.
+      - checkout: none
+
+      - task: NodeTool@0
+        displayName: Use Node.js $(nodeVersion)
+        inputs:
+          versionSpec: $(nodeVersion)
+
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+
+          git config --global core.autocrlf false
+          git config --global core.longpaths true
+          git config --global core.preloadindex true
+          git config --global core.fscache true
+
+          $chromiumRoot = '$(chromiumRoot)'
+          $braveCheckout = '$(braveCheckout)'
+          New-Item -ItemType Directory -Force -Path $chromiumRoot | Out-Null
+
+          if (-not (Test-Path (Join-Path $braveCheckout '.git'))) {
+            New-Item -ItemType Directory -Force -Path $braveCheckout | Out-Null
+            git -C $braveCheckout init
+            git -C $braveCheckout remote add origin $env:BUILD_REPOSITORY_URI
+          } else {
+            git -C $braveCheckout remote set-url origin $env:BUILD_REPOSITORY_URI
+          }
+
+          git -C $braveCheckout fetch --no-tags --depth=1 origin $env:BUILD_SOURCEVERSION
+          git -C $braveCheckout checkout --force --detach FETCH_HEAD
+
+          $actual = (git -C $braveCheckout rev-parse HEAD).Trim()
+          if ($actual -ne $env:BUILD_SOURCEVERSION) {
+            throw "Checked out $actual instead of $env:BUILD_SOURCEVERSION"
+          }
+
+          git -C $braveCheckout config core.autocrlf false
+          git -C $braveCheckout config core.longpaths true
+          Write-Host "Checked out Brave commit $actual"
+        displayName: Checkout pinned Brave commit
+
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+
+          if (-not (Test-Path '$(vs2026Install)')) {
+            throw 'Visual Studio 2026 was not found. Use the windows-2025-g2 image.'
+          }
+
+          $sdkDebuggers = 'C:\Program Files (x86)\Windows Kits\10\Debuggers\x64'
+          if (-not (Test-Path $sdkDebuggers)) {
+            throw 'Windows SDK Debugging Tools x64 are required but were not found.'
+          }
+
+          Get-Volume | Where-Object DriveLetter | ForEach-Object {
+            Write-Host ("{0}: free {1:N1} GiB / {2:N1} GiB" -f `
+              $_.DriveLetter, ($_.SizeRemaining / 1GB), ($_.Size / 1GB))
+          }
+
+          $dataDrive = Get-Volume -DriveLetter F
+          if ($dataDrive.SizeRemaining -lt 300GB) {
+            throw 'At least 300 GiB free on F: is required before initialization.'
+          }
+        displayName: Verify Windows build prerequisites
+
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          Set-Location '$(braveCheckout)'
+          npm install
+          npm run init -- --no-history
+        displayName: Initialize Brave and shallow Chromium checkout
+        env:
+          vs2026_install: $(vs2026Install)
+          DEPOT_TOOLS_WIN_TOOLCHAIN: '0'
+
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          Set-Location '$(braveCheckout)'
+          npm run build
+        displayName: Build Brave Windows x64
+        env:
+          vs2026_install: $(vs2026Install)
+          DEPOT_TOOLS_WIN_TOOLCHAIN: '0'
+          NINJA_SUMMARIZE_BUILD: '1'
+
+      - pwsh: |
+          $ErrorActionPreference = 'Continue'
+          $artifact = '$(Build.ArtifactStagingDirectory)\build-config'
+          New-Item -ItemType Directory -Force -Path $artifact | Out-Null
+
+          $files = @(
+            '$(chromiumRoot)\out\Component\args.gn',
+            '$(chromiumRoot)\out\Component\args_generated.gni'
+          )
+          foreach ($file in $files) {
+            if (Test-Path $file) {
+              Copy-Item $file $artifact
+            }
+          }
+
+          git -C '$(braveCheckout)' status --short --branch
+          Get-Volume | Where-Object DriveLetter | ForEach-Object {
+            Write-Host ("{0}: free {1:N1} GiB / {2:N1} GiB" -f `
+              $_.DriveLetter, ($_.SizeRemaining / 1GB), ($_.Size / 1GB))
+          }
+        displayName: Collect build diagnostics
+        condition: always()
+
+      - task: PublishPipelineArtifact@1
+        displayName: Publish build configuration
+        condition: always()
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)\build-config
+          artifact: windows-x64-build-config
