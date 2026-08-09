@@ -21,6 +21,13 @@ pr:
     include:
       - main
 
+parameters:
+  - name: managedPoolName
+    displayName: Azure Managed DevOps Pool
+    type: string
+    default: browser-takeback-windows
+
+
 variables:
   nodeVersion: 24.18.0
   braveCheckout: $(Pipeline.Workspace)\src\brave
