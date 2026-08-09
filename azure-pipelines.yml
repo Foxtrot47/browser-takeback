@@ -81,7 +81,7 @@ jobs:
             git -C $braveCheckout remote set-url origin $env:BUILD_REPOSITORY_URI
           }
 
-          git -C $braveCheckout fetch --no-tags --depth=1 origin $env:BUILD_SOURCEVERSION
+          git -C $braveCheckout fetch --no-tags --depth=100 origin $env:BUILD_SOURCEVERSION
           git -C $braveCheckout checkout --force --detach FETCH_HEAD
 
           $actual = (git -C $braveCheckout rev-parse HEAD).Trim()
@@ -119,9 +119,28 @@ jobs:
 
       - pwsh: |
           $ErrorActionPreference = 'Stop'
+          $env:BASE_COMMIT_HASH = $null
+          $env:BASE_COMMIT_SUBMISSION_MS = $null
+
           Set-Location '$(braveCheckout)'
           npm install
           npm run init -- --no-history
+
+          # Chromium's linker timestamp is generated from this file. Regenerate
+          # it after sync and fail here rather than passing a 1969 timestamp to
+          # lld-link when Git metadata is unavailable.
+          $env:PATH = "$(braveCheckout)\vendor\depot_tools;$env:PATH"
+          Set-Location '$(chromiumRoot)'
+          git config --global --add safe.directory '$(chromiumRoot)'
+          & '$(braveCheckout)\vendor\depot_tools\python3.bat' `
+            build/util/lastchange.py -o build/util/LASTCHANGE
+
+          $lastChangeTime = [int64](
+            Get-Content build/util/LASTCHANGE.committime -Raw)
+          if ($lastChangeTime -le 0) {
+            throw "Invalid Chromium LASTCHANGE timestamp: $lastChangeTime"
+          }
+          Write-Host "Chromium LASTCHANGE timestamp: $lastChangeTime"
         displayName: Initialize Brave and shallow Chromium checkout
         env:
           vs2026_install: $(vs2026Install)
