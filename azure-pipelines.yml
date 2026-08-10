@@ -123,8 +123,27 @@ jobs:
           $env:BASE_COMMIT_SUBMISSION_MS = $null
 
           Set-Location '$(braveCheckout)'
-          npm install
-          npm run init -- --no-history
+          $syncMarker = Join-Path '$(Pipeline.Workspace)' `
+            '.brave_latest_successful_sync.json'
+          $hasWarmCheckout = `
+            (Test-Path (Join-Path '$(chromiumRoot)' '.git')) -and `
+            (Test-Path (Join-Path '$(Pipeline.Workspace)' '.gclient')) -and `
+            (Test-Path $syncMarker)
+
+          if ($hasWarmCheckout) {
+            Write-Host 'Reusing retained Chromium checkout with incremental sync.'
+            npm run sync -- --no-history
+            if ($LASTEXITCODE -ne 0) {
+              Write-Warning 'Incremental sync failed; retrying with full initialization.'
+              npm run init -- --no-history
+            }
+          } else {
+            Write-Host 'No complete retained checkout found; running full initialization.'
+            npm run init -- --no-history
+          }
+          if ($LASTEXITCODE -ne 0) {
+            throw "Brave synchronization failed with exit code $LASTEXITCODE"
+          }
 
           # Chromium's linker timestamp is generated from this file. Regenerate
           # it after sync and fail here rather than passing a 1969 timestamp to
@@ -141,7 +160,7 @@ jobs:
             throw "Invalid Chromium LASTCHANGE timestamp: $lastChangeTime"
           }
           Write-Host "Chromium LASTCHANGE timestamp: $lastChangeTime"
-        displayName: Initialize Brave and shallow Chromium checkout
+        displayName: Synchronize Brave and Chromium checkout
         env:
           vs2026_install: $(vs2026Install)
           DEPOT_TOOLS_WIN_TOOLCHAIN: '0'
