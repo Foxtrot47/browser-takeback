@@ -1,0 +1,19 @@
+# Copyright (c) 2026 The Browser Takeback Authors. All rights reserved.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Windows product exclusions for Browser Takeback. Explicit local GN arguments
+# are emitted after this import and may override these defaults.
+enable_brave_wallet = false
+enable_ai_chat = false
+enable_brave_rewards = false
+enable_brave_ads = false
+enable_brave_vpn_v1 = false
+enable_brave_vpn_v2 = false
+enable_brave_talk = false
+enable_brave_news = false
+enable_playlist = false
+enable_web_discovery_native = false
+enable_web_discovery = false
+enable_brave_stats_updater = false

@@ -82,6 +82,9 @@ export function getBuildArgs(config: Config) {
   }
   if (config.targetOS !== 'ios' && config.targetOS !== 'android') {
     args['import("//brave/build/args/desktop_defaults.gni")'] = null
+    if (config.targetOS === 'win') {
+      args['import("//brave/build/args/takeback_defaults.gni")'] = null
+    }
   }
 
   config.forwardEnvConfigVarsToObject(FORWARD_ENV_CONFIG_VARS_TO_GN_ARGS, args)
