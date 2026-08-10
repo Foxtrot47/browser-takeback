@@ -157,6 +157,38 @@ jobs:
           NINJA_SUMMARIZE_BUILD: '1'
 
       - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          Set-Location '$(braveCheckout)'
+          npm run build -- --target=brave/build/win:create_signed_installer
+        displayName: Build Brave Windows x64 installer
+        env:
+          vs2026_install: $(vs2026Install)
+          DEPOT_TOOLS_WIN_TOOLCHAIN: '0'
+          NINJA_SUMMARIZE_BUILD: '1'
+
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          $installer = '$(chromiumRoot)\out\Component\brave_installer.exe'
+          $artifact = '$(Build.ArtifactStagingDirectory)\windows-x64-installer'
+          if (-not (Test-Path $installer)) {
+            throw "Installer was not generated: $installer"
+          }
+
+          New-Item -ItemType Directory -Force -Path $artifact | Out-Null
+          Copy-Item $installer $artifact
+          $hash = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash *brave_installer.exe" | Set-Content `
+            (Join-Path $artifact 'SHA256SUMS.txt') -Encoding ascii
+          Write-Host "Installer SHA256: $hash"
+        displayName: Stage Brave Windows x64 installer
+
+      - task: PublishPipelineArtifact@1
+        displayName: Publish Brave Windows x64 installer
+        inputs:
+          targetPath: $(Build.ArtifactStagingDirectory)\windows-x64-installer
+          artifact: browser-takeback-windows-x64-installer
+
+      - pwsh: |
           $ErrorActionPreference = 'Continue'
           $artifact = '$(Build.ArtifactStagingDirectory)\build-config'
           New-Item -ItemType Directory -Force -Path $artifact | Out-Null
