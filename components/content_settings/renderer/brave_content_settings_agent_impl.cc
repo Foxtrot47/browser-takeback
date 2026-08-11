@@ -20,6 +20,7 @@
 #include "brave/components/brave_shields/core/common/brave_shield_utils.h"
 #include "brave/components/brave_shields/core/common/brave_shields_settings_values.h"
 #include "brave/components/brave_shields/core/common/features.h"
+#include "brave/components/user_control/user_control_policy.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/renderer/render_frame.h"
 #include "net/base/features.h"
@@ -144,6 +145,19 @@ bool BraveContentSettingsAgentImpl::IsReduceLanguageEnabled() {
     return false;
   }
   return shields_settings_->reduce_language;
+}
+
+bool BraveContentSettingsAgentImpl::IsUserControlProtectionEnabled(
+    ContentSettingsType type) {
+  if (!content_setting_rules_) {
+    return false;
+  }
+
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+  const GURL outermost_main_frame_url(GetTopFrameOriginAsURL(frame));
+  return user_control::IsProtectionEnabled(
+      content_setting_rules_->user_control_rules, outermost_main_frame_url,
+      type);
 }
 
 bool BraveContentSettingsAgentImpl::IsJsBlockingEnforced() const {

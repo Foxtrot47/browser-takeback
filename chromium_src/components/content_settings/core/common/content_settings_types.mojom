@@ -54,4 +54,9 @@ enum ContentSettingsType {
 
   BRAVE_CARDANO,
   BRAVE_PSST,
+
+  // Browser Takeback user-control protections. BLOCK means protection is
+  // active; ALLOW grants a website exception.
+  BRAVE_USER_CONTROL,
+  BRAVE_USER_CONTROL_PAGE_EXIT,
 };

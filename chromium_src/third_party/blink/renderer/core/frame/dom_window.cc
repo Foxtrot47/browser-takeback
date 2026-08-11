@@ -5,7 +5,23 @@
 
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 
+#include "components/content_settings/core/common/content_settings_types.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+
+#define BRAVE_DOM_WINDOW_CLOSE                                      \
+  if (LocalFrame* incumbent_frame = incumbent_window->GetFrame()) { \
+    if (WebContentSettingsClient* settings_client =                 \
+            incumbent_frame->GetContentSettingsClient();            \
+        settings_client &&                                          \
+        settings_client->IsUserControlProtectionEnabled(            \
+            ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT)) {   \
+      return;                                                       \
+    }                                                               \
+  }
+
 #include <third_party/blink/renderer/core/frame/dom_window.cc>
+#undef BRAVE_DOM_WINDOW_CLOSE
 
 namespace blink {
 

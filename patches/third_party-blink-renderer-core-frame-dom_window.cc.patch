@@ -1,0 +1,10 @@
+diff --git a/third_party/blink/renderer/core/frame/dom_window.cc b/third_party/blink/renderer/core/frame/dom_window.cc
+index 9eb9855567eda196f9cf40ee0ea80a6861f0c209..e943d4719037ee20dc80cba23bd8e604548bfe65 100644
+--- a/third_party/blink/renderer/core/frame/dom_window.cc
++++ b/third_party/blink/renderer/core/frame/dom_window.cc
+@@ -625,4 +625,5 @@ String DOMWindow::CrossDomainAccessErrorMessage(
+ void DOMWindow::close(v8::Isolate* isolate) {
+   LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
++  BRAVE_DOM_WINDOW_CLOSE
+   Close(incumbent_window);
+ }

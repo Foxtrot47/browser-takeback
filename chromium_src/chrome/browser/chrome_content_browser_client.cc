@@ -3,6 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "brave/browser/user_control/user_control_policy.h"
 #include "chrome/browser/search/search.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "extensions/buildflags/buildflags.h"
@@ -19,6 +20,11 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_REGISTRAR_H_
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+#define BRAVE_SHOULD_SKIP_BEFORE_UNLOAD_DIALOG          \
+  if (user_control::IsPageExitProtectionEnabled(rfh)) { \
+    return true;                                        \
+  }
+
 #define HandleNewTabURLRewrite HandleNewTabURLRewrite_ChromiumImpl
 #define HandleNewTabURLReverseRewrite HandleNewTabURLReverseRewrite_ChromiumImpl
 
@@ -33,6 +39,7 @@ bool HandleNewTabURLReverseRewrite(GURL* url, content::BrowserContext* bc) {
 
 #include <chrome/browser/chrome_content_browser_client.cc>
 #undef HandleNewTabURLRewrite
+#undef BRAVE_SHOULD_SKIP_BEFORE_UNLOAD_DIALOG
 #undef HandleNewTabURLReverseRewrite
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
 #undef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_REGISTRAR_H_

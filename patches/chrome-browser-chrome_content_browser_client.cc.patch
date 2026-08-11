@@ -1,0 +1,11 @@
+diff --git a/chrome/browser/chrome_content_browser_client.cc b/chrome/browser/chrome_content_browser_client.cc
+index 89df9311afa2cf904d3e99ea23aaf4ace6353e3f..73301ff667e76487eeae4a421682ea147f361ac4 100644
+--- a/chrome/browser/chrome_content_browser_client.cc
++++ b/chrome/browser/chrome_content_browser_client.cc
+@@ -9547,5 +9547,6 @@ bool ChromeContentBrowserClient::IsFileSystemAccessApiFilePickerAllowed(
+ bool ChromeContentBrowserClient::ShouldSkipBeforeUnloadDialog(
+     content::RenderFrameHost* rfh) {
++  BRAVE_SHOULD_SKIP_BEFORE_UNLOAD_DIALOG
+ #if !BUILDFLAG(IS_ANDROID)
+   if (!base::FeatureList::IsEnabled(
+           actor::kGlicSkipBeforeUnloadDialogAndNavigate)) {

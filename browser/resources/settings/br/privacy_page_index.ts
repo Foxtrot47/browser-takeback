@@ -21,6 +21,7 @@ import '../site_settings/site_settings_solana.js'
 // </if>
 import '../site_settings/site_settings_google.js'
 import '../site_settings/site_settings_shields.js'
+import '../site_settings/site_settings_user_control.js'
 import '../site_settings/site_settings_brave_ai.js'
 import { ContentSettingsTypes } from '../site_settings/constants.js';
 
@@ -119,6 +120,15 @@ RegisterPolymerTemplateModifications({
           slot="view"
           in-search-mode="[[inSearchMode_]]">
         </site-settings-shields-page>`)
+
+    viewManager.appendChild(html`
+      <site-settings-user-control-page
+          id="${ContentSettingsTypes.USER_CONTROL}"
+          route-path$="[[routes_.SITE_SETTINGS_USER_CONTROL.path]]"
+          data-parent-view-id="siteSettings"
+          slot="view"
+          in-search-mode="[[inSearchMode_]]">
+        </site-settings-user-control-page>`)
 
     viewManager.appendChild(html`
       <site-settings-autoplay-page

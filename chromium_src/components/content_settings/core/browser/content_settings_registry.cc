@@ -26,6 +26,8 @@ namespace {
 using enum ContentSettingsType;
 constexpr auto kSettingsNames =
     base::MakeFixedFlatMap<ContentSettingsType, const char*>({
+        {BRAVE_USER_CONTROL, "brave-user-control"},
+        {BRAVE_USER_CONTROL_PAGE_EXIT, "brave-user-control-page-exit"},
         {BRAVE_WEBCOMPAT_NONE, "brave-webcompat-none"},
         {BRAVE_WEBCOMPAT_AUDIO, "brave-webcompat-audio"},
         {BRAVE_WEBCOMPAT_CANVAS, "brave-webcompat-canvas"},
@@ -253,6 +255,21 @@ void ContentSettingsRegistry::BraveInit() {
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
            PermissionSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
+
+  const auto register_user_control_setting = [this](ContentSettingsType type) {
+    const auto match = kSettingsNames.find(type);
+    CHECK(match != kSettingsNames.end());
+    Register(type, match->second, CONTENT_SETTING_BLOCK,
+             WebsiteSettingsInfo::UNSYNCABLE, /*allowlisted_schemes=*/{},
+             /*valid_settings=*/{CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK},
+             WebsiteSettingsInfo::TOP_ORIGIN_ONLY_SCOPE,
+             WebsiteSettingsRegistry::DESKTOP,
+             ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
+             PermissionSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
+  };
+  register_user_control_setting(ContentSettingsType::BRAVE_USER_CONTROL);
+  register_user_control_setting(
+      ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT);
 
   // Disable background sync by default (brave/brave-browser#4709)
   content_settings_info_.erase(ContentSettingsType::BACKGROUND_SYNC);

@@ -39,7 +39,9 @@ bool RendererContentSettingRules::IsRendererContentSetting(
          content_type == ContentSettingsType::BRAVE_COSMETIC_FILTERING ||
          content_type == ContentSettingsType::BRAVE_FINGERPRINTING_V2 ||
          content_type == ContentSettingsType::BRAVE_GOOGLE_SIGN_IN ||
-         content_type == ContentSettingsType::BRAVE_SHIELDS;
+         content_type == ContentSettingsType::BRAVE_SHIELDS ||
+         content_type == ContentSettingsType::BRAVE_USER_CONTROL ||
+         content_type == ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT;
 }
 
 void RendererContentSettingRules::FilterRulesByOutermostMainFrameURL(
@@ -48,6 +50,9 @@ void RendererContentSettingRules::FilterRulesByOutermostMainFrameURL(
       outermost_main_frame_url);
   FilterRulesForType(autoplay_rules, outermost_main_frame_url);
   FilterRulesForType(brave_shields_rules, outermost_main_frame_url);
+  for (auto& entry : user_control_rules) {
+    FilterRulesForType(entry.second, outermost_main_frame_url);
+  }
   // FilterRulesForType has a DCHECK on the size and these fail (for now)
   // because they incorrectly use CONTENT_SETTINGS_DEFAULT as a distinct setting
   std::erase_if(

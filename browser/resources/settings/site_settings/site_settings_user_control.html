@@ -1,0 +1,40 @@
+<!-- Copyright (c) 2026 The Brave Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<settings-subpage page-title="$i18n{siteSettingsUserControl}">
+  <h2>$i18n{siteSettingsUserControlMaster}</h2>
+  <div class="secondary">$i18n{siteSettingsUserControlDescription}</div>
+  <settings-category-default-radio-group
+    id="userControlDefault"
+    category="[[contentSettingsTypesEnum_.USER_CONTROL]]"
+    allow-option-label="$i18n{siteSettingsUserControlAllow}"
+    allow-option-icon="settings:public"
+    block-option-label="$i18n{siteSettingsUserControlProtect}"
+    block-option-icon="shield-done">
+  </settings-category-default-radio-group>
+  <category-setting-exceptions
+    id="userControlExceptions"
+    category="[[contentSettingsTypesEnum_.USER_CONTROL]]"
+    allow-header="$i18n{siteSettingsUserControlAllowExceptions}"
+    block-header="$i18n{siteSettingsUserControlProtectExceptions}">
+  </category-setting-exceptions>
+
+  <h2>$i18n{siteSettingsUserControlPageExit}</h2>
+  <div class="secondary">$i18n{siteSettingsUserControlPageExitDescription}</div>
+  <settings-category-default-radio-group
+    id="userControlPageExitDefault"
+    category="[[contentSettingsTypesEnum_.USER_CONTROL_PAGE_EXIT]]"
+    allow-option-label="$i18n{siteSettingsUserControlPageExitAllow}"
+    allow-option-icon="settings:public"
+    block-option-label="$i18n{siteSettingsUserControlPageExitProtect}"
+    block-option-icon="shield-done">
+  </settings-category-default-radio-group>
+  <category-setting-exceptions
+    id="userControlPageExitExceptions"
+    category="[[contentSettingsTypesEnum_.USER_CONTROL_PAGE_EXIT]]"
+    allow-header="$i18n{siteSettingsUserControlPageExitAllowExceptions}"
+    block-header="$i18n{siteSettingsUserControlPageExitProtectExceptions}">
+  </category-setting-exceptions>
+</settings-subpage>

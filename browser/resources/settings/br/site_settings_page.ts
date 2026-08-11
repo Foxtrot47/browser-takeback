@@ -39,6 +39,13 @@ RegisterPolymerTemplateModifications({
       'afterend',
       getTrustedHTML`
         <div class="cr-row first line-only">
+          <h2 id="userControl"></h2>
+        </div>
+        <settings-site-settings-list id="userControlList"
+          category-list="[[lists_.userControl]]"
+          focus-config="[[focusConfig]]">
+        </settings-site-settings-list>
+        <div class="cr-row first line-only">
           <h2 id="braveShields"></h2>
         </div>
         <settings-site-settings-list id="basicShieldsList"
@@ -46,6 +53,14 @@ RegisterPolymerTemplateModifications({
           focus-config="[[focusConfig]]">
         </settings-site-settings-list>
       `)
+    const siteSettingsUserControlTitle =
+      templateContent.getElementById('userControl')
+    if (!siteSettingsUserControlTitle) {
+      console.error('[Settings] Couldn\'t find user-control title')
+    } else {
+      siteSettingsUserControlTitle.textContent =
+          loadTimeData.getString('siteSettingsUserControl')
+    }
     const siteSettingsShieldsTitle =
       templateContent.getElementById('braveShields')
     if (!siteSettingsShieldsTitle) {
@@ -185,6 +200,16 @@ RegisterPolymerComponentReplacement(
             // </if>
           }
         }
+        ;(lists as unknown as {userControl: unknown[]}).userControl = [
+          {
+            route: routes.SITE_SETTINGS_USER_CONTROL,
+            id: ContentSettingsTypes.USER_CONTROL,
+            label: 'siteSettingsUserControl',
+            icon: 'shield-done',
+            enabledLabel: 'siteSettingsUserControlAllow',
+            disabledLabel: 'siteSettingsUserControlProtect'
+          }
+        ]
         ;(lists as unknown as {shieldsBasic: unknown[]}).shieldsBasic = [
           {
             route: routes.SITE_SETTINGS_SHIELDS_STATUS,

@@ -45,6 +45,11 @@ struct StructTraits<
   webcompat_rules(const RendererContentSettingRules& r) {
     return r.webcompat_rules;
   }
+  static const std::map<ContentSettingsType,
+                        std::vector<ContentSettingPatternSource>>&
+  user_control_rules(const RendererContentSettingRules& r) {
+    return r.user_control_rules;
+  }
 
   static bool Read(
       content_settings::mojom::RendererContentSettingRulesDataView data,

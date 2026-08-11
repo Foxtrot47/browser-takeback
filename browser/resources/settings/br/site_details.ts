@@ -5,8 +5,16 @@
 
 import type { SiteDetailsPermissionElement } from '../site_settings/site_details_permission.js'
 
-import { RegisterPolymerTemplateModifications, html } from 'chrome://resources/brave/polymer_overriding.js'
+import {
+  RegisterPolymerPrototypeModification,
+  RegisterPolymerTemplateModifications,
+  html
+} from 'chrome://resources/brave/polymer_overriding.js'
 import { loadTimeData } from '../i18n_setup.js'
+import {
+  ContentSetting,
+  ContentSettingsTypes
+} from '../site_settings/constants.js'
 
 import 'chrome://resources/brave/leo.bundle.js'
 
@@ -18,7 +26,67 @@ const insertBefore = (element: Element, newElement: Element | Node) => {
   element.parentNode.insertBefore(newElement, element)
 }
 
+const getUserControlLabelKeys = (category: ContentSettingsTypes) => {
+  if (category === ContentSettingsTypes.USER_CONTROL) {
+    return {
+      allow: 'siteSettingsUserControlAllow',
+      block: 'siteSettingsUserControlProtect',
+      allowDefault: 'siteSettingsUserControlAllowDefault',
+      blockDefault: 'siteSettingsUserControlProtectDefault'
+    }
+  }
+  if (category === ContentSettingsTypes.USER_CONTROL_PAGE_EXIT) {
+    return {
+      allow: 'siteSettingsUserControlPageExitAllow',
+      block: 'siteSettingsUserControlPageExitProtect',
+      allowDefault: 'siteSettingsUserControlPageExitAllowDefault',
+      blockDefault: 'siteSettingsUserControlPageExitProtectDefault'
+    }
+  }
+  return null
+}
+
+RegisterPolymerPrototypeModification({
+  'site-details-permission': (prototype) => {
+    const originalDefaultSettingString = prototype.defaultSettingString_
+    prototype.defaultSettingString_ = function (...args: unknown[]) {
+      const [defaultSetting, category] = args as [
+        ContentSetting,
+        ContentSettingsTypes
+      ]
+      const keys = getUserControlLabelKeys(category)
+      if (keys && defaultSetting === ContentSetting.ALLOW) {
+        return this.i18n(keys.allowDefault)
+      }
+      if (keys && defaultSetting === ContentSetting.BLOCK) {
+        return this.i18n(keys.blockDefault)
+      }
+      return originalDefaultSettingString.apply(this, args)
+    }
+    prototype.braveAllowSettingString_ = function (
+        category: ContentSettingsTypes) {
+      const keys = getUserControlLabelKeys(category)
+      return this.i18n(keys?.allow ?? 'siteSettingsActionAllow')
+    }
+    prototype.braveBlockSettingString_ = function (
+        category: ContentSettingsTypes) {
+      const keys = getUserControlLabelKeys(category)
+      return this.i18n(keys?.block ?? 'siteSettingsActionBlock')
+    }
+  }
+})
+
 RegisterPolymerTemplateModifications({
+  'site-details-permission': (templateContent: HTMLTemplateElement) => {
+    const allowOption = templateContent.querySelector('#allow')
+    const blockOption = templateContent.querySelector('#block')
+    if (!allowOption || !blockOption) {
+      console.error('[Settings] Couldn\'t customize site permission labels')
+      return
+    }
+    allowOption.textContent = '[[braveAllowSettingString_(category)]]'
+    blockOption.textContent = '[[braveBlockSettingString_(category)]]'
+  },
   'site-details': (templateContent: HTMLTemplateElement) => {
     // Add top-padding to subpage
     templateContent.prepend(
@@ -48,10 +116,36 @@ RegisterPolymerTemplateModifications({
       console.error('[Settings] Couldn\'t find first permission item')
     } else {
       insertBefore(firstPermissionItem, html`<site-details-permission
+           category="[[contentSettingsTypesEnum_.USER_CONTROL]]"
+           icon="shield-done">
+         </site-details-permission>`)
+      insertBefore(firstPermissionItem, html`<site-details-permission
+           category="[[contentSettingsTypesEnum_.USER_CONTROL_PAGE_EXIT]]"
+           icon="shield-done">
+         </site-details-permission>`)
+      let curChild = 1
+      const userControlSettings = templateContent.querySelector(
+        `div.list-frame > site-details-permission:nth-child(${curChild})`)
+      if (!userControlSettings) {
+        console.error('[Settings] Couldn\'t find user-control settings')
+      } else {
+        userControlSettings.setAttribute(
+          'label', loadTimeData.getString('siteSettingsUserControl'))
+      }
+      curChild++
+      const userControlPageExitSettings = templateContent.querySelector(
+        `div.list-frame > site-details-permission:nth-child(${curChild})`)
+      if (!userControlPageExitSettings) {
+        console.error('[Settings] Couldn\'t find page-exit settings')
+      } else {
+        userControlPageExitSettings.setAttribute(
+          'label', loadTimeData.getString('siteSettingsUserControlPageExit'))
+      }
+      curChild++
+      insertBefore(firstPermissionItem, html`<site-details-permission
            category="[[contentSettingsTypesEnum_.AUTOPLAY]]"
            icon="autoplay-on">
          </site-details-permission>`)
-      let curChild = 1
       const autoplaySettings = templateContent.querySelector(
         `div.list-frame > site-details-permission:nth-child(${curChild})`)
       if (!autoplaySettings) {

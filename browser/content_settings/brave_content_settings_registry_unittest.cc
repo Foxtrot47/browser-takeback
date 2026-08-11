@@ -79,6 +79,37 @@ TEST_F(BraveContentSettingsRegistryTest, Properties) {
 
 // Settings that control access to user data should not be inherited.
 // Check that only safe settings are inherited in incognito.
+TEST_F(BraveContentSettingsRegistryTest, UserControlProperties) {
+  for (const ContentSettingsType type :
+       {ContentSettingsType::BRAVE_USER_CONTROL,
+        ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT}) {
+    const ContentSettingsInfo* info = registry()->Get(type);
+    ASSERT_TRUE(info);
+    EXPECT_TRUE(info->IsSettingValid(CONTENT_SETTING_ALLOW));
+    EXPECT_TRUE(info->IsSettingValid(CONTENT_SETTING_BLOCK));
+    EXPECT_FALSE(info->IsSettingValid(CONTENT_SETTING_ASK));
+    EXPECT_EQ(CONTENT_SETTING_BLOCK, info->GetInitialDefaultSetting());
+    EXPECT_EQ(ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
+              info->incognito_behavior());
+
+    const WebsiteSettingsInfo* website_settings_info =
+        info->website_settings_info();
+    EXPECT_EQ(PrefRegistry::NO_REGISTRATION_FLAGS,
+              website_settings_info->GetPrefRegistrationFlags());
+  }
+
+  EXPECT_EQ("brave-user-control",
+            registry()
+                ->Get(ContentSettingsType::BRAVE_USER_CONTROL)
+                ->website_settings_info()
+                ->name());
+  EXPECT_EQ("brave-user-control-page-exit",
+            registry()
+                ->Get(ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT)
+                ->website_settings_info()
+                ->name());
+}
+
 TEST_F(BraveContentSettingsRegistryTest, Inheritance) {
   // These settings are safe to inherit in incognito mode because they only
   // disable features like popup blocking, download blocking or ad blocking.
@@ -221,6 +252,18 @@ TEST_F(BraveContentSettingsRegistryTest, GetInitialDefaultSetting) {
     SCOPED_TRACE("Content setting: BRAVE_SPEEDREADER");
     info = registry()->Get(ContentSettingsType::BRAVE_SPEEDREADER);
     EXPECT_EQ(CONTENT_SETTING_ASK, info->GetInitialDefaultSetting());
+  }
+
+  {
+    SCOPED_TRACE("Content setting: BRAVE_USER_CONTROL");
+    info = registry()->Get(ContentSettingsType::BRAVE_USER_CONTROL);
+    EXPECT_EQ(CONTENT_SETTING_BLOCK, info->GetInitialDefaultSetting());
+  }
+
+  {
+    SCOPED_TRACE("Content setting: BRAVE_USER_CONTROL_PAGE_EXIT");
+    info = registry()->Get(ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT);
+    EXPECT_EQ(CONTENT_SETTING_BLOCK, info->GetInitialDefaultSetting());
   }
 
   {

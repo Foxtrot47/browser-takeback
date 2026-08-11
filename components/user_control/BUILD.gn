@@ -1,0 +1,27 @@
+# Copyright (c) 2026 The Brave Authors. All rights reserved.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+source_set("common") {
+  sources = [
+    "user_control_policy.cc",
+    "user_control_policy.h",
+  ]
+
+  public_deps = [ "//components/content_settings/core/common" ]
+  deps = [ "//url" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [ "user_control_policy_unittest.cc" ]
+
+  deps = [
+    ":common",
+    "//components/content_settings/core/common",
+    "//testing/gtest",
+    "//url",
+  ]
+}

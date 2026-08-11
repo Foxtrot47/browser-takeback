@@ -39,6 +39,12 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
         RendererContentSettingRules::IsRendererContentSetting(setting.first));
     *setting.second = map->GetSettingsForOneType(setting.first);
   }
+  for (const ContentSettingsType user_control_type :
+       {ContentSettingsType::BRAVE_USER_CONTROL,
+        ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT}) {
+    rules->user_control_rules[user_control_type] =
+        map->GetSettingsForOneType(user_control_type);
+  }
   for (auto webcompat_settings_type = ContentSettingsType::BRAVE_WEBCOMPAT_NONE;
        webcompat_settings_type != ContentSettingsType::BRAVE_WEBCOMPAT_ALL;
        webcompat_settings_type = static_cast<ContentSettingsType>(

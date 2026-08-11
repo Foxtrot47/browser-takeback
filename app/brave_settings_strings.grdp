@@ -955,6 +955,58 @@
   <message name="IDS_SETTINGS_SITE_AND_SHIELDS_SETTINGS" desc="Label for site and shields settings in clear browsing data dialog">
     Site and Shields Settings
   </message>
+  <!-- User-control protections -->
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL" desc="Title for user-control protection site settings.">
+    User-control protections
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_MASTER" desc="Heading for the master user-control protection setting.">
+    Master protection
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_DESCRIPTION" desc="Description of the master user-control protection setting.">
+    Protect browser and user actions from website interference. A site exception here allows all user-control categories for that site.
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_PROTECT" desc="Label for enabling user-control protection.">
+    Protect user control
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_ALLOW" desc="Label for allowing website control.">
+    Allow website control
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_PROTECT_DEFAULT" desc="Default menu label when user-control protection is enabled.">
+    Protect user control (default)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_ALLOW_DEFAULT" desc="Default menu label when website control is allowed.">
+    Allow website control (default)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_PROTECT_EXCEPTIONS" desc="Heading for sites protected by the master user-control setting.">
+    Protected sites
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_ALLOW_EXCEPTIONS" desc="Heading for sites allowed to control protected behavior.">
+    Sites allowed to control protected behavior
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_PAGE_EXIT" desc="Title for page-exit user-control settings.">
+    Page exit
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_PAGE_EXIT_DESCRIPTION" desc="Description of page-exit protection.">
+    Prevent websites from closing their tabs or interrupting navigation with exit confirmation prompts.
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_PAGE_EXIT_PROTECT" desc="Label for enabling page-exit protection.">
+    Ignore website close requests and suppress exit prompts
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_PAGE_EXIT_ALLOW" desc="Label for allowing page-exit website control.">
+    Allow website close requests and exit prompts
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_PAGE_EXIT_PROTECT_DEFAULT" desc="Default menu label when page-exit protection is enabled.">
+    Protect page exit (default)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_PAGE_EXIT_ALLOW_DEFAULT" desc="Default menu label when page-exit website control is allowed.">
+    Allow website control of page exit (default)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_PAGE_EXIT_PROTECT_EXCEPTIONS" desc="Heading for sites with page-exit protection.">
+    Sites with page-exit protection
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_PAGE_EXIT_ALLOW_EXCEPTIONS" desc="Heading for sites allowed to control page exit.">
+    Sites allowed to close pages and show exit prompts
+  </message>
   <!-- Autoplay -->
   <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOPLAY" desc="Label for autoplay site settings.">
     Autoplay

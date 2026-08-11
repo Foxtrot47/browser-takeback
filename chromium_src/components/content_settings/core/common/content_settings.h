@@ -39,6 +39,7 @@ struct RendererContentSettingRules
   ContentSettingsForOneType brave_shields_rules;
   ContentSettingsForOneType cosmetic_filtering_rules;
   std::map<ContentSettingsType, ContentSettingsForOneType> webcompat_rules;
+  std::map<ContentSettingsType, ContentSettingsForOneType> user_control_rules;
 };
 
 namespace content_settings {

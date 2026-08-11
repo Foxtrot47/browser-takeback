@@ -4,6 +4,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "components/content_settings/core/common/content_settings_mojom_traits.h"
+
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings.mojom.h"
 
@@ -26,7 +27,8 @@ bool StructTraits<content_settings::mojom::RendererContentSettingRulesDataView,
          data.ReadFingerprintingRules(&out->fingerprinting_rules) &&
          data.ReadBraveShieldsRules(&out->brave_shields_rules) &&
          data.ReadCosmeticFilteringRules(&out->cosmetic_filtering_rules) &&
-         data.ReadWebcompatRules(&out->webcompat_rules);
+         data.ReadWebcompatRules(&out->webcompat_rules) &&
+         data.ReadUserControlRules(&out->user_control_rules);
 }
 
 }  // namespace mojo
