@@ -44,25 +44,45 @@ TEST(UserControlPolicyTest, UsesOutermostSiteRules) {
   };
 
   EXPECT_TRUE(IsProtectionEnabled(
-      rules, protected_url,
-      ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT));
+      rules, protected_url, ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT));
   EXPECT_FALSE(IsProtectionEnabled(
-      rules, allowed_url,
-      ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT));
+      rules, allowed_url, ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT));
 }
 
-TEST(UserControlPolicyTest, MissingRulesAndNonWebUrlsPreserveBehavior) {
+TEST(UserControlPolicyTest, AppliesToWebAndLocalPagesOnly) {
+  EXPECT_TRUE(IsUserControlProtectionApplicable(GURL("https://example.test/")));
+  EXPECT_TRUE(IsUserControlProtectionApplicable(GURL("http://example.test/")));
+  EXPECT_TRUE(IsUserControlProtectionApplicable(GURL("file:///C:/test.html")));
+  EXPECT_FALSE(IsUserControlProtectionApplicable(GURL("chrome://settings/")));
+  EXPECT_FALSE(IsUserControlProtectionApplicable(GURL("about:blank")));
+}
+
+TEST(UserControlPolicyTest, MissingRulesPreserveBehavior) {
   std::map<ContentSettingsType, ContentSettingsForOneType> rules;
   rules[ContentSettingsType::BRAVE_USER_CONTROL] = {
       MakeRule("*", CONTENT_SETTING_BLOCK),
   };
 
-  EXPECT_FALSE(IsProtectionEnabled(
-      rules, GURL("https://example.test/"),
-      ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT));
-  EXPECT_FALSE(IsProtectionEnabled(
-      rules, GURL("chrome://settings/"),
-      ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT));
+  EXPECT_FALSE(
+      IsProtectionEnabled(rules, GURL("https://example.test/"),
+                          ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT));
+}
+
+TEST(UserControlPolicyTest, ProtectsLocalFilesWithDefaultRules) {
+  std::map<ContentSettingsType, ContentSettingsForOneType> rules;
+  rules[ContentSettingsType::BRAVE_USER_CONTROL] = {
+      MakeRule("*", CONTENT_SETTING_BLOCK),
+  };
+  rules[ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT] = {
+      MakeRule("*", CONTENT_SETTING_BLOCK),
+  };
+
+  EXPECT_TRUE(
+      IsProtectionEnabled(rules, GURL("file:///C:/test.html"),
+                          ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT));
+  EXPECT_FALSE(
+      IsProtectionEnabled(rules, GURL("chrome://settings/"),
+                          ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT));
 }
 
 }  // namespace

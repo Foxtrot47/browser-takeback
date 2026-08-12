@@ -26,7 +26,7 @@ bool IsPageExitProtectionEnabled(content::RenderFrameHost* render_frame_host) {
   }
 
   const GURL& url = outermost_main_frame->GetLastCommittedURL();
-  if (!url.SchemeIsHTTPOrHTTPS()) {
+  if (!IsUserControlProtectionApplicable(url)) {
     return false;
   }
 
@@ -36,8 +36,8 @@ bool IsPageExitProtectionEnabled(content::RenderFrameHost* render_frame_host) {
     return false;
   }
 
-  const ContentSetting master_setting = map->GetContentSetting(
-      url, url, ContentSettingsType::BRAVE_USER_CONTROL);
+  const ContentSetting master_setting =
+      map->GetContentSetting(url, url, ContentSettingsType::BRAVE_USER_CONTROL);
   const ContentSetting category_setting = map->GetContentSetting(
       url, url, ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT);
   return IsProtectionEnabled(master_setting, category_setting);

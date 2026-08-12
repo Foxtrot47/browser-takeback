@@ -17,6 +17,8 @@ namespace user_control {
 
 bool IsUserControlContentSetting(ContentSettingsType type);
 
+bool IsUserControlProtectionApplicable(const GURL& url);
+
 bool IsProtectionEnabled(ContentSetting master_setting,
                          ContentSetting category_setting);
 

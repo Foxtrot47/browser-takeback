@@ -69,6 +69,7 @@ brave_settings_web_component_files = [
   "site_settings/site_settings_google.ts",
   "site_settings/site_settings_shields.ts",
   "site_settings/site_settings_user_control.ts",
+  "site_settings/site_settings_user_control_page_exit.ts",
   "social_blocking_page/social_blocking_page.ts",
   "ui/searchable_drop_down_cros.ts",
 ]

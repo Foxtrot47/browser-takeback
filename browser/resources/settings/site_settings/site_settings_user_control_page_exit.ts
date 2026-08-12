@@ -14,14 +14,15 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {SettingsViewMixin} from '../settings_page/settings_view_mixin.js';
 import {ContentSettingsTypes} from '../site_settings/constants.js';
 
-import {getTemplate} from './site_settings_user_control.html.js';
+import {getTemplate} from './site_settings_user_control_page_exit.html.js';
 
-const SiteSettingsUserControlPageBase = SettingsViewMixin(PolymerElement);
+const SiteSettingsUserControlPageExitBase =
+    SettingsViewMixin(PolymerElement);
 
-export class SiteSettingsUserControlPage extends
-    SiteSettingsUserControlPageBase {
+export class SiteSettingsUserControlPageExit extends
+    SiteSettingsUserControlPageExitBase {
   static get is() {
-    return 'site-settings-user-control-page';
+    return 'site-settings-user-control-page-exit';
   }
 
   static get template() {
@@ -48,9 +49,10 @@ export class SiteSettingsUserControlPage extends
 
 declare global {
   interface HTMLElementTagNameMap {
-    'site-settings-user-control-page': SiteSettingsUserControlPage;
+    'site-settings-user-control-page-exit':
+        SiteSettingsUserControlPageExit;
   }
 }
 
 customElements.define(
-    SiteSettingsUserControlPage.is, SiteSettingsUserControlPage);
+    SiteSettingsUserControlPageExit.is, SiteSettingsUserControlPageExit);

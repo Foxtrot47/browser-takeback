@@ -959,9 +959,6 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL" desc="Title for user-control protection site settings.">
     User-control protections
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_MASTER" desc="Heading for the master user-control protection setting.">
-    Master protection
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_USER_CONTROL_DESCRIPTION" desc="Description of the master user-control protection setting.">
     Protect browser and user actions from website interference. A site exception here allows all user-control categories for that site.
   </message>

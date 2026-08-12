@@ -3,27 +3,27 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#include "brave/browser/user_control/user_control_policy.h"
-
 #include "base/run_loop.h"
 #include "base/test/run_until.h"
+#include "brave/browser/user_control/user_control_policy.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "components/javascript_dialogs/app_modal_dialog_controller.h"
-#include "components/javascript_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/javascript_dialogs/app_modal_dialog_controller.h"
+#include "components/javascript_dialogs/app_modal_dialog_queue.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -66,13 +66,21 @@ class PageExitBrowserTest : public InProcessBrowserTest {
     return popup;
   }
 
+  content::WebContents* OpenBlankPopup(content::WebContents* opener) {
+    content::WebContentsAddedObserver added_observer;
+    EXPECT_TRUE(content::ExecJs(
+        opener,
+        "window.takebackPopup = window.open('', '', 'width=200,height=100');"));
+    return added_observer.GetWebContents();
+  }
+
   void InstallBeforeUnloadHandler(content::WebContents* web_contents) {
-    ASSERT_TRUE(content::ExecJs(
-        web_contents,
-        "window.addEventListener('beforeunload', event => {"
-        "  event.preventDefault();"
-        "  event.returnValue = '';"
-        "});"));
+    ASSERT_TRUE(
+        content::ExecJs(web_contents,
+                        "window.addEventListener('beforeunload', event => {"
+                        "  event.preventDefault();"
+                        "  event.returnValue = '';"
+                        "});"));
     content::PrepContentsForBeforeUnloadTest(web_contents);
   }
 
@@ -80,8 +88,8 @@ class PageExitBrowserTest : public InProcessBrowserTest {
     auto* queue = javascript_dialogs::AppModalDialogQueue::GetInstance();
     ASSERT_TRUE(queue->HasActiveDialog());
     queue->active_dialog()->OnCancel(true);
-    ASSERT_TRUE(base::test::RunUntil(
-        [queue] { return !queue->HasActiveDialog(); }));
+    ASSERT_TRUE(
+        base::test::RunUntil([queue] { return !queue->HasActiveDialog(); }));
   }
 };
 
@@ -116,10 +124,40 @@ IN_PROC_BROWSER_TEST_F(PageExitBrowserTest, WindowCloseMasterAllow) {
   destroyed_watcher.Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(PageExitBrowserTest,
+                       WebPageCannotCloseBlankPopupByDefault) {
+  const GURL url = embedded_test_server()->GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  content::WebContents* opener =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* popup = OpenBlankPopup(opener);
+  ASSERT_TRUE(popup);
+
+  EXPECT_TRUE(content::ExecJs(opener, "window.takebackPopup.close();"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(popup->IsBeingDestroyed());
+  EXPECT_EQ(false, content::EvalJs(opener, "window.takebackPopup.closed"));
+}
+
+IN_PROC_BROWSER_TEST_F(PageExitBrowserTest,
+                       LocalFileCannotCloseBlankPopupByDefault) {
+  const GURL file_url =
+      net::FilePathToFileURL(GetChromeTestDataDir().AppendASCII("title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), file_url));
+  content::WebContents* opener =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* popup = OpenBlankPopup(opener);
+  ASSERT_TRUE(popup);
+
+  EXPECT_TRUE(content::ExecJs(opener, "window.takebackPopup.close();"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(popup->IsBeingDestroyed());
+  EXPECT_EQ(false, content::EvalJs(opener, "window.takebackPopup.closed"));
+}
+
 IN_PROC_BROWSER_TEST_F(PageExitBrowserTest, BeforeUnloadProtectedByDefault) {
   const GURL url = embedded_test_server()->GetURL("a.test", "/title1.html");
-  const GURL target =
-      embedded_test_server()->GetURL("a.test", "/title2.html");
+  const GURL target = embedded_test_server()->GetURL("a.test", "/title2.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -133,8 +171,7 @@ IN_PROC_BROWSER_TEST_F(PageExitBrowserTest, BeforeUnloadProtectedByDefault) {
 
 IN_PROC_BROWSER_TEST_F(PageExitBrowserTest, BeforeUnloadCategoryAllow) {
   const GURL url = embedded_test_server()->GetURL("a.test", "/title1.html");
-  const GURL target =
-      embedded_test_server()->GetURL("a.test", "/title2.html");
+  const GURL target = embedded_test_server()->GetURL("a.test", "/title2.html");
   SetException(url, ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT,
                CONTENT_SETTING_ALLOW);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
@@ -151,8 +188,7 @@ IN_PROC_BROWSER_TEST_F(PageExitBrowserTest, BeforeUnloadCategoryAllow) {
 
 IN_PROC_BROWSER_TEST_F(PageExitBrowserTest, BeforeUnloadMasterAllow) {
   const GURL url = embedded_test_server()->GetURL("a.test", "/title1.html");
-  const GURL target =
-      embedded_test_server()->GetURL("a.test", "/title2.html");
+  const GURL target = embedded_test_server()->GetURL("a.test", "/title2.html");
   SetException(url, ContentSettingsType::BRAVE_USER_CONTROL,
                CONTENT_SETTING_ALLOW);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
@@ -183,8 +219,7 @@ IN_PROC_BROWSER_TEST_F(PageExitBrowserTest,
                 url, url, ContentSettingsType::BRAVE_USER_CONTROL));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             incognito_settings->GetContentSetting(
-                url, url,
-                ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT));
+                url, url, ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT));
 }
 
 IN_PROC_BROWSER_TEST_F(PageExitBrowserTest, EmbeddedFrameUsesOutermostSite) {
@@ -193,8 +228,8 @@ IN_PROC_BROWSER_TEST_F(PageExitBrowserTest, EmbeddedFrameUsesOutermostSite) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), top_url));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::RenderFrameHost* child = content::ChildFrameAt(
-      web_contents->GetPrimaryMainFrame(), 0);
+  content::RenderFrameHost* child =
+      content::ChildFrameAt(web_contents->GetPrimaryMainFrame(), 0);
   ASSERT_TRUE(child);
 
   const GURL child_url = child->GetLastCommittedURL();

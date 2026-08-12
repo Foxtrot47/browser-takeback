@@ -86,6 +86,8 @@ export default function addBraveRoutes(r: Partial<SettingsRoutes>) {
   if (r.SITE_SETTINGS) {
     r.SITE_SETTINGS_USER_CONTROL =
       r.SITE_SETTINGS.createChild('userControl')
+    r.SITE_SETTINGS_USER_CONTROL_PAGE_EXIT =
+      r.SITE_SETTINGS.createChild('userControlPageExit')
     r.SITE_SETTINGS_AUTOPLAY = r.SITE_SETTINGS.createChild('autoplay')
     const isGoogleSignInFeatureEnabled =
       loadTimeData.getBoolean('isGoogleSignInFeatureEnabled')

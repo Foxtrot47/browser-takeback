@@ -4,24 +4,24 @@
      You can obtain one at https://mozilla.org/MPL/2.0/. -->
 
 <style include="settings-shared site-settings-shared"></style>
-<settings-subpage page-title="$i18n{siteSettingsUserControl}"
+<settings-subpage page-title="$i18n{siteSettingsUserControlPageExit}"
     search-label="$i18n{siteSettingsAllSitesFilter}"
     search-icon="settings20:filter-list"
     search-term="{{searchTerm}}" route-path$="[[routePath]]">
   <div class="content-settings-header secondary">
-    $i18n{siteSettingsUserControlDescription}
+    $i18n{siteSettingsUserControlPageExitDescription}
   </div>
   <settings-category-default-radio-group
-      category="[[contentSettingsTypesEnum_.USER_CONTROL]]"
-      allow-option-label="$i18n{siteSettingsUserControlAllow}"
+      category="[[contentSettingsTypesEnum_.USER_CONTROL_PAGE_EXIT]]"
+      allow-option-label="$i18n{siteSettingsUserControlPageExitAllow}"
       allow-option-icon="settings:public"
-      block-option-label="$i18n{siteSettingsUserControlProtect}"
+      block-option-label="$i18n{siteSettingsUserControlPageExitProtect}"
       block-option-icon="shield-done">
   </settings-category-default-radio-group>
   <category-setting-exceptions
-      category="[[contentSettingsTypesEnum_.USER_CONTROL]]"
-      allow-header="$i18n{siteSettingsUserControlAllowExceptions}"
-      block-header="$i18n{siteSettingsUserControlProtectExceptions}"
+      category="[[contentSettingsTypesEnum_.USER_CONTROL_PAGE_EXIT]]"
+      allow-header="$i18n{siteSettingsUserControlPageExitAllowExceptions}"
+      block-header="$i18n{siteSettingsUserControlPageExitProtectExceptions}"
       search-filter="[[searchTerm]]">
   </category-setting-exceptions>
 </settings-subpage>

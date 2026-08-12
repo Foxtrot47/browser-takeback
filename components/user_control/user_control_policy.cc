@@ -38,6 +38,10 @@ bool IsUserControlContentSetting(ContentSettingsType type) {
          type == ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT;
 }
 
+bool IsUserControlProtectionApplicable(const GURL& url) {
+  return url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile();
+}
+
 bool IsProtectionEnabled(ContentSetting master_setting,
                          ContentSetting category_setting) {
   return master_setting != CONTENT_SETTING_ALLOW &&
@@ -48,15 +52,14 @@ bool IsProtectionEnabled(
     const std::map<ContentSettingsType, ContentSettingsForOneType>& rules,
     const GURL& outermost_main_frame_url,
     ContentSettingsType category) {
-  if (!outermost_main_frame_url.SchemeIsHTTPOrHTTPS() ||
+  if (!IsUserControlProtectionApplicable(outermost_main_frame_url) ||
       category == ContentSettingsType::BRAVE_USER_CONTROL ||
       !IsUserControlContentSetting(category)) {
     return false;
   }
 
-  const auto master_setting =
-      GetSetting(rules, ContentSettingsType::BRAVE_USER_CONTROL,
-                 outermost_main_frame_url);
+  const auto master_setting = GetSetting(
+      rules, ContentSettingsType::BRAVE_USER_CONTROL, outermost_main_frame_url);
   const auto category_setting =
       GetSetting(rules, category, outermost_main_frame_url);
   return master_setting && category_setting &&
