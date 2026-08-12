@@ -155,6 +155,44 @@ IN_PROC_BROWSER_TEST_F(PageExitBrowserTest,
   EXPECT_EQ(false, content::EvalJs(opener, "window.takebackPopup.closed"));
 }
 
+IN_PROC_BROWSER_TEST_F(PageExitBrowserTest,
+                       InitialEmptyChildCannotCloseBlankPopupByDefault) {
+  const GURL url = embedded_test_server()->GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  content::WebContents* opener =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ASSERT_TRUE(content::ExecJs(opener, R"JS(
+    const resultFrame = document.createElement('iframe');
+    document.body.appendChild(resultFrame);
+    resultFrame.contentWindow.document.open();
+    resultFrame.contentWindow.document.write(`
+      <script>
+        let popup;
+        function openPopup() {
+          popup = window.open('', '', 'width=200,height=100');
+        }
+        function closePopup() {
+          popup.close();
+        }
+      <\/script>`);
+    resultFrame.contentWindow.document.close();
+  )JS"));
+
+  content::RenderFrameHost* result_frame =
+      content::ChildFrameAt(opener->GetPrimaryMainFrame(), 0);
+  ASSERT_TRUE(result_frame);
+  content::WebContentsAddedObserver added_observer;
+  ASSERT_TRUE(content::ExecJs(result_frame, "openPopup();"));
+  content::WebContents* popup = added_observer.GetWebContents();
+  ASSERT_TRUE(popup);
+
+  EXPECT_TRUE(content::ExecJs(result_frame, "closePopup();"));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(popup->IsBeingDestroyed());
+  EXPECT_EQ(false, content::EvalJs(result_frame, "popup.closed"));
+}
+
 IN_PROC_BROWSER_TEST_F(PageExitBrowserTest, BeforeUnloadProtectedByDefault) {
   const GURL url = embedded_test_server()->GetURL("a.test", "/title1.html");
   const GURL target = embedded_test_server()->GetURL("a.test", "/title2.html");

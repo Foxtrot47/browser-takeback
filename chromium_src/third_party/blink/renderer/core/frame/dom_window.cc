@@ -9,10 +9,18 @@
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
+// Initial empty child frames may not have received content-setting rules yet.
+// Prefer the local top frame's client so document.write() runners cannot bypass
+// protection through such a frame.
 #define BRAVE_DOM_WINDOW_CLOSE                                      \
   if (LocalFrame* incumbent_frame = incumbent_window->GetFrame()) { \
+    LocalFrame* settings_frame = incumbent_frame;                   \
+    if (auto* local_top_frame =                                     \
+            DynamicTo<LocalFrame>(incumbent_frame->Tree().Top())) { \
+      settings_frame = local_top_frame;                             \
+    }                                                               \
     if (WebContentSettingsClient* settings_client =                 \
-            incumbent_frame->GetContentSettingsClient();            \
+            settings_frame->GetContentSettingsClient();             \
         settings_client &&                                          \
         settings_client->IsUserControlProtectionEnabled(            \
             ContentSettingsType::BRAVE_USER_CONTROL_PAGE_EXIT)) {   \
